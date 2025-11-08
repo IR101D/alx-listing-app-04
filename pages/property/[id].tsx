@@ -1,37 +1,34 @@
 import { useRouter } from "next/router";
-import axios from "axios";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { PROPERTYLISTINGSAMPLE } from "@/constants";
+import { PropertyProps } from "@/interfaces";
 import PropertyDetail from "@/components/property/PropertyDetail";
 
 export default function PropertyDetailPage() {
   const router = useRouter();
   const { id } = router.query;
-  const [property, setProperty] = useState(null);
+
+  const [property, setProperty] = useState<PropertyProps | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProperty = async () => {
-      if (!id) return;
-      try {
-        const response = await axios.get(`/api/properties/${id}`);
-        setProperty(response.data);
-      } catch (error) {
-        console.error("Error fetching property details:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (!id) return;
 
-    fetchProperty();
+    // Convert id to number since we use array index
+    const propertyIndex = Number(id);
+    const selectedProperty = PROPERTYLISTINGSAMPLE[propertyIndex];
+
+    if (selectedProperty) {
+      setProperty(selectedProperty);
+    } else {
+      setProperty(null);
+    }
+
+    setLoading(false);
   }, [id]);
 
-  if (loading) {
-    return <p>Loading...</p>;
-  }
-
-  if (!property) {
-    return <p>Property not found</p>;
-  }
+  if (loading) return <p className="text-center mt-10">Loading...</p>;
+  if (!property) return <p className="text-center mt-10">Property not found.</p>;
 
   return <PropertyDetail property={property} />;
 }
